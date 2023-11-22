@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(realsense_depth)
+project(opencv_toolkits)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -10,13 +10,10 @@ project(realsense_depth)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   geometry_msgs
-  image_transport
-  realsense2
   roscpp
   rospy
   sensor_msgs
   std_msgs
-  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -110,8 +107,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES realsense_depth
-#  CATKIN_DEPENDS cv_bridge geometry_msgs image_transport librealsense2 roscpp rospy sensor_msgs std_msgs tf
+#  LIBRARIES opencv_toolkits
+#  CATKIN_DEPENDS cv_bridge geometry_msgs roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -128,7 +125,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/realsense_depth.cpp
+#   src/${PROJECT_NAME}/opencv_toolkits.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -139,7 +136,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/realsense_depth_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/opencv_toolkits_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -155,11 +152,6 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-
-add_executable(pixel_point src/pixel_point.cpp)
-target_link_libraries(pixel_point
-  ${catkin_LIBRARIES}
-)
 
 #############
 ## Install ##
@@ -208,7 +200,7 @@ target_link_libraries(pixel_point
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_realsense_depth.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_opencv_toolkits.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -1,0 +1,5 @@
+<launch>
+    <node name="video_publisher" pkg="image_application" type="videp_publisher.py" output="screen" args="/home/en/catkin_ws/cars(720p).mp4">
+        <remap from="/output_image" to="/camera_image"/>
+    </node>
+</launch>

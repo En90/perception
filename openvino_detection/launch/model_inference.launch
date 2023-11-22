@@ -1,0 +1,13 @@
+<launch>
+    <node name="model_inference" pkg="openvino_detection" type="model_inference.py" output="screen" launch-prefix="/home/en/openvino_env/bin/python3">
+        <remap from="/input_image" to="/camera/color/image_raw"/>
+        <remap from="/result" to="/result"/>
+        <remap from="/pixel_position" to="/car_pixel"/>
+        <param name="model_path" value="/home/en/intel/vehicle-detection-0201/FP32/vehicle-detection-0201.xml"/>
+        <param name="model_thresh" value="0.975"/>
+        <!-- if bbox's area is bigger than raw_image * ratio_max, than discard this bbox-->
+        <param name="filter_bbox_ratio_max" value="0.5"/>
+        <!-- if bbox's area is smaller than raw_image * ratio_min, than discard this bbox-->
+        <param name="filter_bbox_ratio_min" value="0"/>
+    </node>
+</launch>

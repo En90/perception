@@ -1,0 +1,6 @@
+<launch>
+    <node name="object_tracking" pkg="opencv_toolkits" type="object_tracking" output="screen">
+        <param name="video_source" value="/home/en/catkin_ws/tracking_video_2160p.mp4"/>
+        <param name="tracking_method" value="mosse"/>
+    </node>
+</launch>

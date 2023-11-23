@@ -106,9 +106,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES opencv_toolkits
-#  CATKIN_DEPENDS cv_bridge geometry_msgs roscpp rospy sensor_msgs std_msgs
+  CATKIN_DEPENDS cv_bridge geometry_msgs roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -119,7 +119,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -152,6 +152,17 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+
+#add_executable(centroid_tracking src/centroid_tracking.cpp)
+#target_link_libraries(centroid_tracking
+#  ${catkin_LIBRARIES} ${OpenCV_LIBS}
+#)
+
+add_executable(object_tracking src/object_tracking.cpp)
+target_link_libraries(object_tracking
+  ${catkin_LIBRARIES} ${OpenCV_LIBS}
+)
+
 
 #############
 ## Install ##

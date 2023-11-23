@@ -1,0 +1,10 @@
+<launch>
+    <node name="multi_tracking" pkg="opencv_toolkits" type="multi_tracking" output="screen">
+        <param name="exact_time" value="True"/>
+        <param name="tracking_method" value="mosse"/>
+        <param name="sync_queuesize" value="10"/>
+        <param name="update_duration" value="5"/> <!-- second -->
+        <remap from="colorimage_topic" to="camera/color/image_raw" />
+        <remap from="boundingbox_topic" to="bounding_box" />
+    </node>
+</launch>

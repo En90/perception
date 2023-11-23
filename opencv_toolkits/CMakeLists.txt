@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  vision_msgs
+  message_filters
 )
 
 ## System dependencies are found with CMake's conventions
@@ -163,6 +165,10 @@ target_link_libraries(object_tracking
   ${catkin_LIBRARIES} ${OpenCV_LIBS}
 )
 
+add_executable(multi_tracking src/multi_tracking.cpp)
+target_link_libraries(multi_tracking
+  ${catkin_LIBRARIES} ${OpenCV_LIBS}
+)
 
 #############
 ## Install ##

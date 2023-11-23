@@ -8,6 +8,6 @@
         <param name="sync_queuesize" value="100"/>
         <!-- if your pixel and depth image is sync and has same time stamp, else use approx algorithm -->
         <!-- for example need to set enable_sync true inside realsense launch file -->
-        <param name="exact_time" value="False"/>
+        <param name="exact_time" value="True"/>
     </node>
 </launch>

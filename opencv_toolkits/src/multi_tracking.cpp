@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
 #include <vision_msgs/BoundingBox2DArray.h>
 #include <vision_msgs/BoundingBox2D.h>
@@ -19,13 +20,14 @@ class Node{
         typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, vision_msgs::BoundingBox2DArray> ExactSyncPolicy;
         
         ros::NodeHandle nh;
+        image_transport::ImageTransport it;
         ros::Timer timer;
-        ros::Publisher image_pub;
-        cv::MultiTracker multi_tracker;
+        image_transport::Publisher image_pub;
+        cv::Ptr<cv::MultiTracker> multi_tracker = cv::MultiTracker::create();
         std::string tracking_method;
         int sync_queuesize = 10;
         bool exact_time = true;
-        cv::Mat img;
+        cv_bridge::CvImagePtr imgptr;
         std::vector<vision_msgs::BoundingBox2D> bboxs;
 
         message_filters::Subscriber<sensor_msgs::Image> image_sub;
@@ -75,6 +77,7 @@ class Node{
                 default:
                     ROS_ERROR("invalid tracking method, shutdown node");
                     ros::shutdown();
+                    return NULL;
             }
         }
 
@@ -83,41 +86,47 @@ class Node{
             float cy = bbox_.center.y;
             float left_up_x = cx - bbox_.size_x;
             float left_up_y = cy - bbox_.size_y;
-            return cv::Rect(left_up_x, left_up_y, bbox_.size_x, bbox_.size_y);
+            return cv::Rect(bbox_.center.x, bbox_.center.y, bbox_.size_x, bbox_.size_y);
         }
 
         void sync_callback(const sensor_msgs::ImageConstPtr &image_msg, const vision_msgs::BoundingBox2DArray::ConstPtr &bbox_msg){
             // deal with image
-            cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::TYPE_8UC1);
-            img = cv_ptr->image;
+            cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::TYPE_8UC3);
+            imgptr = cv_ptr;
+            bboxs.clear();
             for(auto &bbox : bbox_msg->boxes){
                 bboxs.emplace_back(bbox);
             }
-            cv::Mat frame = img;
+            cv::Mat frame = imgptr->image;
 
-            if(!multi_tracker.empty()){
-                if(multi_tracker.update(img)){
+            if(!multi_tracker->empty()){
+                if(multi_tracker->update(imgptr->image)){
                 
                 }
                 else{
-                    ROS_ERROR("multi_tracker update return false, shutdown now");
-                    ros::shutdown();
+                    ROS_WARN("multi_tracker update return false");
                 }
+                // getObjects: Returns a reference to a storage for the tracked objects, each object corresponds to one tracker algorithm.
                 // draw the tracked object
-                for(unsigned i=0; i<multi_tracker.getObjects().size(); i++)
-                    cv::rectangle(frame, multi_tracker.getObjects()[i], cv::Scalar(255, 0, 0), 2, 1);
+                for(unsigned int i=0; i < multi_tracker->getObjects().size(); i++){
+                    cv::Rect2d bb = multi_tracker->getObjects()[i];
+                    if(!(bb.width == 0 || bb.height == 0)){
+                        cv::rectangle(frame, bb, cv::Scalar(255, 0, 0), 2, 1);
+                        cv::putText(frame, std::to_string(i), cv::Point(bb.x, bb.y), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0,255,0), 2, true);
+                    }
+                }
             }
             
             cv_bridge::CvImage out_msg;
             out_msg.header = image_msg->header;
-            out_msg.encoding = sensor_msgs::image_encodings::RGB8;
+            out_msg.encoding = sensor_msgs::image_encodings::BGR8;
             out_msg.image = frame;
             image_pub.publish(out_msg.toImageMsg());
         }
 
         void timer_callback(const ros::TimerEvent& event){
             // a timer to init bbox, renew multi_tracker
-            multi_tracker.clear();
+            multi_tracker = cv::MultiTracker::create();
             std::vector<cv::Ptr<cv::Tracker>> algorithms;
             std::vector<cv::Rect2d> objects;
             for (size_t i = 0; i < bboxs.size(); i++)
@@ -125,7 +134,9 @@ class Node{
                 algorithms.push_back(init_tracker(tracking_method));
                 objects.push_back(msg_to_rect(bboxs[i]));
             }
-            if(!multi_tracker.add(algorithms, img, objects)){
+            if(imgptr == nullptr)
+                return;
+            if(!multi_tracker->add(algorithms, imgptr->image, objects)){
                 ROS_ERROR("multi_tracker add return false, shutdown now");
                 ros::shutdown();
             }
@@ -133,7 +144,7 @@ class Node{
 
     public:
         Node():
-            nh("~")
+            nh("~"), it(nh)
         {
             if(nh.getParam("tracking_method", tracking_method)){
                 ROS_INFO("get param: tracking method");
@@ -158,6 +169,7 @@ class Node{
                 static message_filters::Synchronizer<ApproxSyncPolicy> sync(ApproxSyncPolicy(sync_queuesize), image_sub, bbox_sub);
                 sync.registerCallback(boost::bind(&Node::sync_callback, this,_1, _2));
             }
+            image_pub = it.advertise("tracking_result", 1);
         }
 };
 

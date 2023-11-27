@@ -4,7 +4,10 @@ from openvino.runtime import Core
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PointStamped
+from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Header
+from vision_msgs.msg import BoundingBox2DArray
+from vision_msgs.msg import BoundingBox2D
 import numpy as np
 import rospy
 import cv2
@@ -46,6 +49,7 @@ class Node:
         self.__image_sub = rospy.Subscriber("/input_image", Image, self.__image_callback)
         self.__image_pub = rospy.Publisher("/result", Image, queue_size=5)
         self.__position_pub = rospy.Publisher("/pixel_position", PointStamped, queue_size=10)
+        self.__boundingbox_pub = rospy.Publisher("/bounding_box", BoundingBox2DArray, queue_size=1)
         
     def __model_init(self, model_path: str) -> tuple:
         """
@@ -71,6 +75,9 @@ class Node:
         # Get input size - Detection.
         height_de, width_de = list(self.__input_key_de.shape)[2:]
         h: Header = msg.header
+        if (h.stamp.secs == 0) and (h.stamp.nsecs == 0):
+            h.stamp = rospy.get_rostime()
+        
         try:
             image = self.__bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
             # Resize it to [3, 256, 256].
@@ -87,7 +94,8 @@ class Node:
         boxes = boxes[~np.all(boxes == 0, axis=1)]
         
         car_points = list()
-        result_image = self.__convert_result_to_image(image, input_image_de, boxes, car_points, threshold=self.__model_thresh)
+        bboxs = list()
+        result_image = self.__convert_result_to_image(image, input_image_de, boxes, car_points, bboxs, threshold=self.__model_thresh)
         try:
             image_message = self.__bridge.cv2_to_imgmsg(result_image, encoding="bgr8")
             # image_message = self.__bridge.cv2_to_imgmsg(result_image, encoding="bgr8")
@@ -101,6 +109,20 @@ class Node:
                 self.__position_pub.publish(p)
         else:
             pass
+        
+        if(len(bboxs)):
+            bbs_msg = BoundingBox2DArray()
+            bbs_msg.header = h
+            for x_min, y_min, x_max, y_max in bboxs:
+                bbox = BoundingBox2D()
+                cen = Pose2D()
+                cen.x = x_min
+                cen.y = y_min
+                bbox.center = cen
+                bbox.size_x = x_max - x_min
+                bbox.size_y = y_max - y_min
+                bbs_msg.boxes.append(bbox)
+            self.__boundingbox_pub.publish(bbs_msg)
 
     
     def __crop_images(self, bgr_image, resized_image, boxes, threshold=0.8) -> np.ndarray:
@@ -143,7 +165,7 @@ class Node:
 
         return car_position
     
-    def __convert_result_to_image(self, raw_image, resized_image, boxes, pixel_positions: list, threshold=0.8):
+    def __convert_result_to_image(self, raw_image, resized_image, boxes, pixel_positions: list, return_bbs: list, threshold=0.8):
         """
         Use Detection model boxes to draw rectangles and plot the result
 
@@ -173,6 +195,7 @@ class Node:
             p.point.y = (y_min + y_max)/2
             p.point.z = conf
             pixel_positions.append(p)
+            return_bbs.append([x_min, y_min, x_max, y_max])
             rgb_image = cv2.circle(rgb_image, (round((x_max + x_min)/2), round((y_min + y_max)/2)), 2, colors["green"], 2)
             # Print the attributes of a vehicle.
             # Parameters in the `putText` function are: img, text, org, fontFace, fontScale, color, thickness, lineType.

@@ -5,6 +5,6 @@
         <param name="sync_queuesize" value="10"/>
         <param name="update_duration" value="5"/> <!-- second -->
         <remap from="colorimage_topic" to="camera/color/image_raw" />
-        <remap from="boundingbox_topic" to="bounding_box" />
+        <remap from="boundingbox_topic" to="/bounding_box" />
     </node>
 </launch>

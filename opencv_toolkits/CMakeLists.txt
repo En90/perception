@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   vision_msgs
   message_filters
+  image_transport
 )
 
 ## System dependencies are found with CMake's conventions

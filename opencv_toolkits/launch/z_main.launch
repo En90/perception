@@ -1,0 +1,11 @@
+<launch>
+    <include file="$(find realsense2_camera)/launch/depth_color_30fps.launch"/>
+    <node name="zebra_crossing" pkg="opencv_toolkits" type="zebra_crossing" output="screen">
+        <remap from="/image" to="/camera/color/image_raw" />
+        <remap from="/result" to="/result" />
+        <param name="thresh_method" value="canny"/>
+        <param name="filter_method" value="median"/>
+        <param name="fit_method" value="least_squares"/> <!-- least_squares ransac hough--> 
+    </node>
+    
+</launch>

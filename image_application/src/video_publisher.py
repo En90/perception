@@ -18,7 +18,32 @@ def myhook():
 def image_publisher():
     rospy.init_node('image_publisher', anonymous=True)
     pub = rospy.Publisher('output_image', Image, queue_size=100)
-    rate = rospy.Rate(20) # 20Hz
+    
+    if rospy.has_param('~repeat'):
+        repeat_:bool = rospy.get_param("~repeat")
+        rospy.loginfo("repeat the video")
+    else:
+        repeat_ = False
+        
+    if rospy.has_param('~frequency'):
+        fq_:int = rospy.get_param("~frequency")
+        rospy.loginfo("set video frequeny: %d", fq_)
+    else:
+        fq_ = 20
+        
+    if rospy.has_param('~height'):
+        height_:int = rospy.get_param("~height")
+        rospy.loginfo("set video height: %d", height_)
+    else:
+        height_ = 640
+        
+    if rospy.has_param('~width'):
+        width_:int = rospy.get_param("~width")
+        rospy.loginfo("set video width: %d", width_)
+    else:
+        width_ = 1080
+    
+    rate = rospy.Rate(fq_) # 20Hz
     bridge = CvBridge()
     resource = sys.argv[1]
     resource_name = resource
@@ -31,19 +56,23 @@ def image_publisher():
     rospy.loginfo("Correctly opened resource, starting to show feed.")
     rval, frame = cap.read()
     
-    while rval and not rospy.is_shutdown():
+    while cap.isOpened() and not rospy.is_shutdown():
         rval, frame = cap.read()
         # cv2.imshow("Stream: " + resource_name, frame)
         # ROS image stuff
-        if frame is not None:
+        if (frame is not None) and rval:
             frame = np.uint8(frame)
         else:
-            exit(0)
-        frame = cv2.resize(frame, (1080, 640), interpolation= cv2.INTER_LINEAR)
+            if repeat_:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                continue
+            else:
+                exit(0)
+        frame = cv2.resize(frame, (width_, height_), interpolation= cv2.INTER_LINEAR)
         image_message = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
         image_message.header.stamp = rospy.get_rostime()
         pub.publish(image_message)
-        key = cv2.waitKey(50)   # 50 milisecond
+        key = cv2.waitKey(1000//fq_)   # 50 milisecond
         # exit on ESC, you may want to uncomment the rospy.loginfo to know which key is ESC for you
         if key == 27 or key == 1048603:
             break

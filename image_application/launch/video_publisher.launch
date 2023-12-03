@@ -1,5 +1,9 @@
 <launch>
     <node name="video_publisher" pkg="image_application" type="videp_publisher.py" output="screen" args="/home/en/catkin_ws/tracking_video_2160p.mp4">
         <remap from="/output_image" to="/camera_image"/>
+        <param name="repeat" value="True" />
+        <param name="frequency" value="5" />
+        <param name="width" value="1080" />
+        <param name="height" value="640" />
     </node>
 </launch>

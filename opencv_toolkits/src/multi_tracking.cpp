@@ -29,6 +29,7 @@ class Node{
         bool exact_time = true;
         cv_bridge::CvImagePtr imgptr;
         std::vector<vision_msgs::BoundingBox2D> bboxs;
+        int count = 0;
 
         message_filters::Subscriber<sensor_msgs::Image> image_sub;
         message_filters::Subscriber<vision_msgs::BoundingBox2DArray> bbox_sub;

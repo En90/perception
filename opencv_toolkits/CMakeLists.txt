@@ -171,6 +171,12 @@ target_link_libraries(multi_tracking
   ${catkin_LIBRARIES} ${OpenCV_LIBS}
 )
 
+add_executable(zebra_crossing src/zebra_crossing.cpp)
+target_link_libraries(zebra_crossing
+  ${catkin_LIBRARIES} ${OpenCV_LIBS}
+)
+
+
 #############
 ## Install ##
 #############

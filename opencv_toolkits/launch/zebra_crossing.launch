@@ -1,0 +1,18 @@
+<launch>
+    <node name="video_publisher" pkg="image_application" type="video_publisher.py" output="screen" args="/home/en/catkin_ws/zebra_crossing_8.mp4">
+        <remap from="/output_image" to="/camera_image"/>
+        <param name="repeat" value="True"/>
+        <param name="frequency" value="20" />
+        <param name="width" value="1080" />
+        <param name="height" value="640" />
+    </node>
+    <node name="zebra_crossing" pkg="opencv_toolkits" type="zebra_crossing" output="screen">
+        <remap from="/image" to="/camera_image" />
+        <remap from="/result" to="/result" />
+        <param name="coutour_area_thresh" value="0.005"/>
+        <param name="white_region_thresh" value="0.0015"/>
+        <param name="thresh_method" value="canny"/>
+        <param name="filter_method" value="median"/>
+        <param name="fit_method" value="least_squares"/> <!-- least_squares ransac hough--> 
+    </node>
+</launch>

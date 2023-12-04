@@ -7,5 +7,32 @@
         <param name="filter_method" value="median"/>
         <param name="fit_method" value="least_squares"/> <!-- least_squares ransac hough--> 
     </node>
-    
+    <node name="pixel_point1" pkg="realsense_depth" type="pixel_point" output="screen">
+        <remap from="/camerainfo_topic" to="/camera/aligned_depth_to_color/camera_info"/>
+        <remap from="/depthimage_topic" to="/camera/aligned_depth_to_color/image_raw"/>
+        <remap from="/pixel_topic" to="/point1"/>
+        <remap from="/point" to="/point1_cam"/>
+        <param name="reference_frame" value="camera_color_optical_frame"/>
+        <param name="sync_queuesize" value="100"/>
+        <!-- if your pixel and depth image is sync and has same time stamp, else use approx algorithm -->
+        <!-- for example need to set enable_sync true inside realsense launch file -->
+        <param name="exact_time" value="True"/>
+    </node>
+    <node name="pixel_point2" pkg="realsense_depth" type="pixel_point" output="screen">
+        <remap from="/camerainfo_topic" to="/camera/aligned_depth_to_color/camera_info"/>
+        <remap from="/depthimage_topic" to="/camera/aligned_depth_to_color/image_raw"/>
+        <remap from="/pixel_topic" to="/point2"/>
+        <remap from="/point" to="/point2_cam"/>
+        <param name="reference_frame" value="camera_color_optical_frame"/>
+        <param name="sync_queuesize" value="100"/>
+        <!-- if your pixel and depth image is sync and has same time stamp, else use approx algorithm -->
+        <!-- for example need to set enable_sync true inside realsense launch file -->
+        <param name="exact_time" value="True"/>
+    </node>
+    <node name="z_main" pkg="opencv_toolkits" type="z_main">
+        <param name="reference_frame" value=""/>
+        <remap from="point1" to="point1_cam"/>
+        <remap from="point2" to="point2_cam"/>
+        <remap from="destination_pose" to="destination_pose"/>
+    </node>
 </launch>

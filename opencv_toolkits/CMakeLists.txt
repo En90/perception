@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   vision_msgs
   message_filters
   image_transport
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -173,6 +174,11 @@ target_link_libraries(multi_tracking
 
 add_executable(zebra_crossing src/zebra_crossing.cpp)
 target_link_libraries(zebra_crossing
+  ${catkin_LIBRARIES} ${OpenCV_LIBS}
+)
+
+add_executable(z_main src/z_main.cpp)
+target_link_libraries(z_main
   ${catkin_LIBRARIES} ${OpenCV_LIBS}
 )
 

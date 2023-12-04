@@ -79,6 +79,10 @@ class Node{
                     offset);
                 cv::drawContours(original_image, contours, -1, cv::Scalar(0,255,0), 1, cv::LINE_8);
                 for(auto &contour: contours){
+                    if(contourTouchesImageBorder(contour, original_image.size())){
+                        continue;
+                    }
+
                     if(cv::contourArea(contour) > (img_size*coutour_area_thresh)){
                         cv::Moments m = cv::moments(contour);
                         int cX = int(m.m10 / m.m00);
@@ -126,37 +130,39 @@ class Node{
                 // //     pointslope_to_pointpoint(middle_line, m_point1, m_point2, inImage);                
                 // //     cv::line(original_image, m_point1, m_point2, cv::Scalar(255,0,255), 3);
 
-                cv::Mat middle_mat = cv::Mat::zeros(original_image.size(), CV_8UC1);
-                for(auto &p: middle_points){
-                    middle_mat.at<uchar>(p.y,p.x) = 255;
-                }
-                std::vector<cv::Vec2f> middle_lines;
-                cv::HoughLines(middle_mat, middle_lines, 1, CV_PI/180, 1, 0, 0);
-                if(!middle_lines.empty()){
-                    cv::Vec2f middle_line = middle_lines[1];
-                    float rho = middle_line[0], theta = middle_line[1];
-                    cv::Point pt1, pt2;
-                    double a = cos(theta), b = sin(theta);
-                    double x0 = a*rho, y0 = b*rho;
-                    pt1.x = cvRound(x0 + 1000*(-b));
-                    pt1.y = cvRound(y0 + 1000*(a));
-                    pt2.x = cvRound(x0 - 1000*(-b));
-                    pt2.y = cvRound(y0 - 1000*(a));
-                    cv::line(original_image, pt1, pt2, cv::Scalar(0,0,255), 3, cv::LINE_AA);
-                    
-                    cv::Point line1_p = pointpoint_solve_point(pt1, pt2, -1, height_-10);
-                    cv::Point line2_p = pointpoint_solve_point(pt1, pt2, -1, height_-60);
-                    //std::cout << line1_p.x << " " << line1_p.y << std::endl;
-                    cv::circle(original_image, cv::Point(line1_p.x, line1_p.y), 3, cv::Scalar(255,0,0), 2);
-                    cv::circle(original_image, cv::Point(line2_p.x, line2_p.y), 3, cv::Scalar(255,0,0), 2);
-                    bool line1_p_condition = (line1_p.x >= 10 && line1_p.x <= width_-10);
-                    bool line2_p_condition = (line2_p.x >= 10 && line2_p.x <= width_-10);
-                    if(line1_p_condition && line2_p_condition){
-                        std_msgs::Header h;
-                        h.stamp = curr_stamp;
-                        h.frame_id = image_frame;
-                        point1_mem.emplace_back(std::make_pair(line1_p, h));
-                        point2_mem.emplace_back(std::make_pair(line2_p, h));
+                if(!middle_points.empty()){
+                    cv::Mat middle_mat = cv::Mat::zeros(original_image.size(), CV_8UC1);
+                    for(auto &p: middle_points){
+                        middle_mat.at<uchar>(p.y,p.x) = 255;
+                    }
+                    std::vector<cv::Vec2f> middle_lines;
+                    cv::HoughLines(middle_mat, middle_lines, 1, CV_PI/180, 1, 0, 0);
+                    if(!middle_lines.empty()){
+                        cv::Vec2f middle_line = middle_lines[1];
+                        float rho = middle_line[0], theta = middle_line[1];
+                        cv::Point pt1, pt2;
+                        double a = cos(theta), b = sin(theta);
+                        double x0 = a*rho, y0 = b*rho;
+                        pt1.x = cvRound(x0 + 1000*(-b));
+                        pt1.y = cvRound(y0 + 1000*(a));
+                        pt2.x = cvRound(x0 - 1000*(-b));
+                        pt2.y = cvRound(y0 - 1000*(a));
+                        cv::line(original_image, pt1, pt2, cv::Scalar(0,0,255), 3, cv::LINE_AA);
+                        
+                        cv::Point line1_p = pointpoint_solve_point(pt1, pt2, -1, height_-10);
+                        cv::Point line2_p = pointpoint_solve_point(pt1, pt2, -1, height_-60);
+                        //std::cout << line1_p.x << " " << line1_p.y << std::endl;
+                        cv::circle(original_image, cv::Point(line1_p.x, line1_p.y), 3, cv::Scalar(255,0,0), 2);
+                        cv::circle(original_image, cv::Point(line2_p.x, line2_p.y), 3, cv::Scalar(255,0,0), 2);
+                        bool line1_p_condition = (line1_p.x >= 10 && line1_p.x <= width_-10);
+                        bool line2_p_condition = (line2_p.x >= 10 && line2_p.x <= width_-10);
+                        if(line1_p_condition && line2_p_condition){
+                            std_msgs::Header h;
+                            h.stamp = curr_stamp;
+                            h.frame_id = image_frame;
+                            point1_mem.emplace_back(std::make_pair(line1_p, h));
+                            point2_mem.emplace_back(std::make_pair(line2_p, h));
+                        }
                     }
                 }
 
@@ -191,8 +197,7 @@ class Node{
                     point_pub1.publish(point_msg2);
                     point1_mem.clear();
                     point2_mem.clear();
-                }
-                
+                } 
             }
             catch (cv_bridge::Exception &e){
                 ROS_ERROR("cv_bridge exception: %s", e.what());
@@ -212,7 +217,7 @@ class Node{
         }
 
         void preprocess(cv::Mat &inImage){
-            cv::GaussianBlur(inImage, inImage, cv::Size(25,25), 0, 0, cv::BORDER_CONSTANT);
+            cv::GaussianBlur(inImage, inImage, cv::Size(25,25), 0, 0, cv::BORDER_REPLICATE);
             switch(thresh_method){
                 case Thresh_Method::ADAPT:
                 {
@@ -307,8 +312,8 @@ class Node{
                     break;
                 }
             }
-            cv::Rect border(cv::Point(0, 0), inImage.size());
-            cv::rectangle(inImage, border, cv::Scalar(0, 0, 0), 3);
+            // cv::Rect border(cv::Point(0, 0), inImage.size());
+            // cv::rectangle(inImage, border, cv::Scalar(0, 0, 0), 1);
         }
 
         cv::Mat set_region(cv::Mat &inImage){
@@ -318,12 +323,43 @@ class Node{
         }
 
         cv::Point pointpoint_solve_point(cv::Point &line_pt1, cv::Point &line_pt2, int x = -1, int y = -1){
+            if((line_pt2.y - line_pt1.y) == 0)
+                return cv::Point(-1, -1);
             if(y != -1){
                 x = line_pt2.x - round((line_pt2.y - y)*(line_pt2.x - line_pt1.x)/(line_pt2.y - line_pt1.y));
             }else if(x != -1){
                 y = line_pt2.y - round((line_pt2.x - x)*(line_pt2.x - line_pt1.x)/(line_pt2.y - line_pt1.y));
             }
             return cv::Point(x, y);
+        }
+
+        bool contourTouchesImageBorder(const std::vector<cv::Point>& contour, const cv::Size& imageSize)
+        {
+            cv::Rect bb = cv::boundingRect(contour);
+            bool retval = false;
+            int xMin, xMax, yMin, yMax;
+            xMin = 0;
+            yMin = 0;
+            xMax = imageSize.width - 1;
+            yMax = imageSize.height - 1;
+
+            // Use less/greater comparisons to potentially support contours outside of 
+            // image coordinates, possible future workarounds with cv::copyMakeBorder where
+            // contour coordinates may be shifted and just to be safe.
+            // However note that bounding boxes of size 1 will have their start point
+            // included (of course) but also their and with/height values set to 1 
+            // but should not contain 2 pixels.
+            // Which is why we have to -1 the "search grid"
+            int bbxEnd = bb.x + bb.width - 1;
+            int bbyEnd = bb.y + bb.height - 1;
+            if (bb.x <= xMin ||
+                bb.y <= yMin ||
+                bbxEnd >= xMax ||
+                bbyEnd >= yMax)
+            {
+                retval = true;
+            }
+            return retval;
         }
 
     public:

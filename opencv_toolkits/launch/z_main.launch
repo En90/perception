@@ -6,6 +6,8 @@
         <remap from="/result" to="/result" />
         <param name="thresh_method" value="canny"/>
         <param name="filter_method" value="median"/>
+        <param name="coutour_area_thresh" value="0.005"/>
+        <param name="white_region_thresh" value="0.0015"/>
         <param name="fit_method" value="least_squares"/> <!-- least_squares ransac hough--> 
     </node>
     <node name="pixel_point1" pkg="realsense_depth" type="pixel_point" output="screen">

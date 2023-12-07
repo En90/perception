@@ -32,7 +32,7 @@ class Node{
             p.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
             p.pose.position.x = point1_msg->point.x;
             p.pose.position.y = point1_msg->point.y;
-            p.pose.position.z = 0;
+            p.pose.position.z = point1_msg->point.z;
 
             geometry_msgs::PoseStamped pose_stamped_out;
             if (reference_frame != p.header.frame_id){

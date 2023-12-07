@@ -62,14 +62,14 @@ class Node{
                 int img_size = height_* width_;
                 cv::Mat inImage;
                 cv::cvtColor(original_image, inImage, cv::COLOR_RGB2GRAY);
-                cv::Mat roi = set_region(inImage);
+                cv::Mat roi = set_region(inImage, height_/2);
                 preprocess(roi);
 
                 // use contour
                 std::vector<cv::Point> middle_points;
                 std::vector<std::vector<cv::Point>> contours;
                 std::vector<cv::Vec4i> hierarchy;
-                cv::Point offset(0, inImage.size().height/2+20);
+                cv::Point offset(0, height_/2);
                 cv::findContours(
                     roi,
                     contours,
@@ -154,8 +154,8 @@ class Node{
                         //std::cout << line1_p.x << " " << line1_p.y << std::endl;
                         cv::circle(original_image, cv::Point(line1_p.x, line1_p.y), 3, cv::Scalar(255,0,0), 2);
                         cv::circle(original_image, cv::Point(line2_p.x, line2_p.y), 3, cv::Scalar(255,0,0), 2);
-                        bool line1_p_condition = (line1_p.x >= 10 && line1_p.x <= width_-10);
-                        bool line2_p_condition = (line2_p.x >= 10 && line2_p.x <= width_-10);
+                        bool line1_p_condition = (line1_p.x >= 20 && line1_p.x <= width_-20);
+                        bool line2_p_condition = (line2_p.x >= 20 && line2_p.x <= width_-20);
                         if(line1_p_condition && line2_p_condition){
                             std_msgs::Header h;
                             h.stamp = curr_stamp;
@@ -316,8 +316,8 @@ class Node{
             // cv::rectangle(inImage, border, cv::Scalar(0, 0, 0), 1);
         }
 
-        cv::Mat set_region(cv::Mat &inImage){
-            cv::Rect region(cv::Point(0, inImage.size().height/2+20), cv::Point(inImage.size().width, inImage.size().height));
+        cv::Mat set_region(cv::Mat &inImage, int top_y){
+            cv::Rect region(cv::Point(0, top_y), cv::Point(inImage.size().width, inImage.size().height));
             cv::Mat roi = inImage(region);
             return roi;
         }

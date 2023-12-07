@@ -31,7 +31,7 @@
         <param name="exact_time" value="True"/>
     </node>
     <node name="z_main" pkg="opencv_toolkits" type="z_main">
-        <param name="reference_frame" value=""/>
+        <param name="reference_frame" value="base_footprint"/>
         <remap from="point1" to="point1_cam"/>
         <remap from="point2" to="point2_cam"/>
         <remap from="destination_pose" to="destination_pose"/>

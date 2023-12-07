@@ -1,4 +1,5 @@
 <launch>
+    <node pkg="tf" type="static_transform_publisher" name="camera_base_broadcaster" args="0 0 0 0 0 0 base_footprint camera_link 100" />
     <include file="$(find realsense2_camera)/launch/depth_color_30fps.launch"/>
     <node name="zebra_crossing" pkg="opencv_toolkits" type="zebra_crossing" output="screen">
         <remap from="/image" to="/camera/color/image_raw" />

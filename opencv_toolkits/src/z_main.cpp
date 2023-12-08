@@ -35,12 +35,16 @@ class Node{
             p.pose.position.z = point1_msg->point.z;
 
             geometry_msgs::PoseStamped pose_stamped_out;
+            pose_stamped_out.header = p.header;
+            pose_stamped_out.header.frame_id = reference_frame;
             if (reference_frame != p.header.frame_id){
                 try{
-                    static tf::TransformListener listener(ros::Duration(10));
-                    listener.transformPose(reference_frame, p, pose_stamped_out);
+                    // tf::TransformListener listener(ros::Duration(5));
+                    // listener.transformPose(reference_frame, p, pose_stamped_out);
+                    _tfListener.transformPose(reference_frame, p, pose_stamped_out);
                 }
                 catch (const tf::TransformException& e){
+                    ROS_ERROR("error: %s", e.what());
                     ROS_ERROR_STREAM("Error in transform of " << p.header.frame_id << " in " << reference_frame);
                     ros::shutdown();
                 }

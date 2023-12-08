@@ -99,9 +99,10 @@ class Node{
             rs2_deproject_pixel_to_point(point_3d, rs_intrin_, pixel_to_find, depth);
             // ROS_INFO("x: %f, y: %f, z: %f", std::get<0>(point_3d), std::get<1>(point_3d), std::get<2>(point_3d));
             geometry_msgs::PointStamped ps;
-            ps.point.x = std::get<0>(point_3d);
-            ps.point.y = std::get<1>(point_3d);
-            ps.point.z = std::get<2>(point_3d);
+            //change to milimeter
+            ps.point.x = std::get<0>(point_3d) / 1000;
+            ps.point.y = std::get<1>(point_3d) / 1000;
+            ps.point.z = std::get<2>(point_3d) / 1000;
             // init header
             ps.header = image_msg->header;
             ps.header.frame_id = pixel_msg->header.frame_id;

@@ -62,14 +62,14 @@ class Node{
                 int img_size = height_* width_;
                 cv::Mat inImage;
                 cv::cvtColor(original_image, inImage, cv::COLOR_RGB2GRAY);
-                cv::Mat roi = set_region(inImage, height_/2);
+                cv::Mat roi = set_region(inImage, 10); //height_/2
                 preprocess(roi);
 
                 // use contour
                 std::vector<cv::Point> middle_points;
                 std::vector<std::vector<cv::Point>> contours;
                 std::vector<cv::Vec4i> hierarchy;
-                cv::Point offset(0, height_/2);
+                cv::Point offset(0, 10); //height_/2
                 cv::findContours(
                     roi,
                     contours,
@@ -194,7 +194,7 @@ class Node{
                     point_msg1.point = p1_;
                     point_msg2.point = p2_;
                     point_pub1.publish(point_msg1);
-                    point_pub1.publish(point_msg2);
+                    point_pub2.publish(point_msg2);
                     point1_mem.clear();
                     point2_mem.clear();
                 } 

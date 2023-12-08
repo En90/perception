@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="tf" type="static_transform_publisher" name="camera_base_broadcaster" args="0 0 0 0 0 0 base_footprint camera_link 100" />
+    <node pkg="tf" type="static_transform_publisher" name="camera_base_broadcaster" args="0.3 0 0.8 0 0.349 0 base_footprint camera_link 100" />
     <include file="$(find realsense2_camera)/launch/depth_color_30fps.launch"/>
     <node name="zebra_crossing" pkg="opencv_toolkits" type="zebra_crossing" output="screen">
         <remap from="/image" to="/camera/color/image_raw" />
@@ -32,7 +32,7 @@
         <!-- for example need to set enable_sync true inside realsense launch file -->
         <param name="exact_time" value="True"/>
     </node>
-    <node name="z_main" pkg="opencv_toolkits" type="z_main">
+    <node name="z_main" pkg="opencv_toolkits" type="z_main" output="screen">
         <param name="reference_frame" value="base_footprint"/>
         <remap from="point1" to="point1_cam"/>
         <remap from="point2" to="point2_cam"/>

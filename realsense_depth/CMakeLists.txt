@@ -161,6 +161,11 @@ target_link_libraries(pixel_point
   ${catkin_LIBRARIES}
 )
 
+add_executable(multi_pixel_point src/multi_pixel_point.cpp)
+target_link_libraries(multi_pixel_point
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############

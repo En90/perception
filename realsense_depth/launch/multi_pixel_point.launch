@@ -1,0 +1,13 @@
+<launch>
+    <node name="multi_pixel_point" pkg="realsense_depth" type="multi_pixel_point" output="screen">
+        <remap from="/camerainfo_topic" to="/camera/aligned_depth_to_color/camera_info"/>
+        <remap from="/depthimage_topic" to="/camera/aligned_depth_to_color/image_raw"/>
+        <remap from="/pose_array_in" to="/"/>
+        <remap from="/pose_array_out" to="/"/>
+        <param name="reference_frame" value="camera_color_optical_frame"/>
+        <param name="sync_queuesize" value="100"/>
+        <!-- if your pixel and depth image is sync and has same time stamp, else use approx algorithm -->
+        <!-- for example need to set enable_sync true inside realsense launch file -->
+        <param name="exact_time" value="True"/>
+    </node>
+</launch>

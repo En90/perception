@@ -4,7 +4,15 @@
         <param name="tracking_method" value="mosse"/>
         <param name="sync_queuesize" value="10"/>
         <param name="update_duration" value="5"/> <!-- second -->
+        <param name="calculate_speed" value="False"/>
+        <!-- subscriber -->
         <remap from="colorimage_topic" to="camera/color/image_raw" />
         <remap from="boundingbox_topic" to="/bounding_box" />
+        <remap from="posearray_topic" to="/posearray_topic" />
+        <remap from="camerainfo_topic" to="camerainfo_topic" />
+        <!-- publisher -->
+        <remap from="tracking_result" to="/tracking_result" />
+        <remap from="2d_points" to="2d_points" />
+        <remap from="speed_result" to="speed_result" />
     </node>
 </launch>

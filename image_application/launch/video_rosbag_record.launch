@@ -1,0 +1,5 @@
+<launch>
+    <arg name="bag_name" default="realsense_bag" />
+    <include file="$(find realsense2_camera)/launch/depth_color_30fps.launch" />
+    <node pkg="rosbag" type="record" name="video_rosbag_record" output="screen" args="-O /home/$(env USER)/$(arg bag_name).bag /camera/color/image_raw /camera/aligned_depth_to_color/image_raw /camera/aligned_depth_to_color/camera_info" />
+</launch>

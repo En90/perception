@@ -46,7 +46,7 @@ class Node{
         cv_bridge::CvImagePtr imgptr;
         std::vector<vision_msgs::BoundingBox2D> bboxs;
         std::vector<std::pair<int, cv::Point>> central; // id, central pixel
-        std::vector<cv::Point3d> points_last;
+        std::vector<std::pair<cv::Point3d, double>> points_last;
         int count = 0;
         bool cal_speed = false;
         CameraInfo cam_info;
@@ -173,7 +173,7 @@ class Node{
                 points_last.clear();
                 for(auto &pose : pose_array_msg->poses){
                     cv::Point3d p_now(pose.position.x, pose.position.y, pose.position.z);
-                    points_last.emplace_back(p_now);
+                    points_last.emplace_back(std::make_pair(p_now, pose_array_msg->header.stamp.toSec()));
                 }
                 out_msg.image = image;
                 speed_result_pub.publish(out_msg.toImageMsg());
@@ -183,17 +183,22 @@ class Node{
                     tf::StampedTransform transform;
                     cv::Point3d p_now((pose_array_msg->poses)[i].position.x, (pose_array_msg->poses)[i].position.y, (pose_array_msg->poses)[i].position.z);
                     if(getTransform(reference_frame, camera_frame, transform)){
+                        // calculate speed
+                        double distance = sqrt(pow(p_now.x-points_last[i].first.x, 2) + pow(p_now.y-points_last[i].first.y, 2) + pow(p_now.z-points_last[i].first.z, 2));
+                        double speed_ms = distance / (pose_array_msg->header.stamp.toSec()-points_last[i].second);
+
                         std::vector<cv::Point2f> imagePoints;
                         std::vector<cv::Point3d> objectPoints;
                         cv::Mat rVec = cv::Mat::zeros(3, 1, cv::DataType<float>::type);
                         cv::Mat tVec = cv::Mat::zeros(3, 1, cv::DataType<float>::type);
                         objectPoints.emplace_back(p_now);
-                        objectPoints.emplace_back(points_last[i]);
+                        objectPoints.emplace_back(points_last[i].first);
                         transform_to_rtvec(transform, rVec, tVec);
                         cv::projectPoints(objectPoints, rVec, tVec, cam_info.intrisicMat, cam_info.distCoeffs, imagePoints);
                         cv::arrowedLine(image, imagePoints[0], imagePoints[1], cv::Scalar(0, 0, 255, 255), 2);
+                        cv::putText(image, std::to_string(speed_ms), imagePoints[1], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 0, 255, 255), 2);
                     }
-                    points_last.emplace_back(p_now);
+                    points_last.emplace_back(std::make_pair(p_now, pose_array_msg->header.stamp.toSec()));
                 }
                 out_msg.image = image;
                 speed_result_pub.publish(out_msg.toImageMsg());

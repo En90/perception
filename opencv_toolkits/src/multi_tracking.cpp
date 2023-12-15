@@ -331,6 +331,7 @@ class Node{
             int duration_to_update = 5; // five second
             nh.param<int>("update_duration", duration_to_update, 5);
             nh.param<bool>("calculate_speed", cal_speed, false);
+            nh.param<std::string>("refernece_frame", reference_frame, "");
 
             timer = nh.createTimer(ros::Duration(duration_to_update), &Node::timer_callback, this);
             image_sub.subscribe(nh, "/colorimage_topic", 1);
